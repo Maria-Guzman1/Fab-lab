@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
-import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-firestore.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-storage.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-firestore.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -16,32 +15,31 @@ const firebaseConfig = {
 // Inicialización de Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-// Variable global para almacenar los productos
+// Variable global para almacenar los productos cargados desde Firebase
 let products = [];
 
-// Función para cargar productos y renderizarlos
-async function loadAndRenderProducts() {
+// Función para cargar productos desde Firebase
+async function loadProductsFromFirebase() {
     try {
         // Obtén los productos de Firebase
         const querySnapshot = await getDocs(collection(db, 'productos'));
-        products = []; // Limpiar la lista de productos
+        products = []; // Limpiar lista de productos
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             products.push({
-                id: doc.id, // Guarda el ID del documento
+                id: doc.id, // ID del documento
                 name: data.nombre,
                 price: data.precio,
                 image: data.imageUrl || 'https://via.placeholder.com/150' // Imagen por defecto si no hay URL
             });
         });
 
-        // Renderiza los productos en el catálogo
+        // Renderizar productos después de cargarlos desde Firebase
         renderProducts(products);
     } catch (e) {
-        console.error('Error al cargar los productos: ', e);
+        console.error('Error al cargar los productos de Firebase: ', e);
     }
 }
 
@@ -54,20 +52,32 @@ function renderProducts(productsList) {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
 
-        // Formateo del precio
-        const formattedPrice = new Intl.NumberFormat('es-GT', {
-            style: 'currency',
-            currency: 'GTQ'
-        }).format(product.price);
+        // Asegurarse de que el precio sea un número antes de usar toFixed
+        const price = parseFloat(product.price); 
+        const formattedPrice = isNaN(price) ? "Precio no disponible" : price.toFixed(2);
 
         productCard.innerHTML = `
-            <img src="${product.image}" alt="${product.name}" style="width: 100%; height: auto; max-width: 150px; max-height: 100px;">
+            <img src="${product.image}" alt="${product.name}">
             <h3>${product.name}</h3>
-            <p>Precio: ${formattedPrice}</p>
-            <button onclick="deleteProduct('${product.id}')">Me interesa</button>
+            <p>Precio: Q${formattedPrice}</p>
+            <button class="whatsappButton" data-product-name="${product.name}" data-product-price="${formattedPrice}" data-product-image="${product.image}">Me interesa</button>
         `;
 
         catalog.appendChild(productCard);
+    });
+
+    // Añadir el evento a todos los botones de WhatsApp
+    const whatsappButtons = document.querySelectorAll('.whatsappButton');
+    whatsappButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productName = this.getAttribute('data-product-name');
+            const productPrice = this.getAttribute('data-product-price');
+            const productImage = this.getAttribute('data-product-image');
+            const mensaje = `Hola, estoy interesado en el producto: ${productName}\nPrecio: Q${productPrice}\nImagen: ${productImage}`;
+            const numeroTelefono = "+50247012204"; // Reemplaza con el número de teléfono deseado en formato internacional
+            const url = `https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        });
     });
 }
 
@@ -83,17 +93,5 @@ function filterProducts() {
 // Evento para la búsqueda
 document.getElementById('searchInput').addEventListener('input', filterProducts);
 
-// Función para eliminar un producto
-async function deleteProduct(id) {
-    try {
-        await deleteDoc(doc(db, 'productos', id));
-        alert('Producto eliminado.');
-        loadAndRenderProducts(); // Vuelve a cargar y renderizar productos
-    } catch (e) {
-        console.error('Error al eliminar el producto: ', e);
-        alert('Error al eliminar el producto.');
-    }
-}
-
-// Inicializar carga y renderizado de productos
-loadAndRenderProducts();
+// Inicializar catálogo cargando productos desde Firebase
+loadProductsFromFirebase();

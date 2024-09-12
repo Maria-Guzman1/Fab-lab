@@ -17,7 +17,6 @@
                 <li><a href="index.html">Inicio</a></li>
                 <li><a href="cotizacionUser.html">Cotizaciones</a></li>
                 <li><a href="catalogo.html">Cátalogos</a></li>
-                <li><a href="index2.html">Registro</a></li>
             </ul>
         </nav>
     </header>
@@ -49,10 +48,39 @@
         </div>
         <div class="mt-4">
             <button type="button" class="btn btn-dark" id="Calcular">Calcular</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@getbootstrap">Hacer pedido</button>
+
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Realizar pedido</h1>
+                        <button  type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                        <div class="mb-3">
+                            <label for="recipient-name" class="col-form-label">Nombre:</label>
+                            <input  type="text" class="form-control" id="Nom">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Numero:</label>
+                            <input type="number" class="form-control" id="Num">
+                        </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button id="Enviar" type="button" class="btn btn-primary">Enviar</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
         </div>
         <div class="mt-4">
             <h3>Historial de Cotizaciones</h3>
             <ul id="historialCotizaciones" class="list-group"></ul>
+
         </div>
     </main>
     <script type="module" src="cotizacionUser.js"></script>
